@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Deposit Pertama Newbie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        borderbg: '#334155'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="min-h-screen font-sans pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-100">Cek Newbie Depo 1st</h1>
+                    <p class="text-xs text-slate-400">Analisis Transaksi & Deposit Pertama New Member (Berdasarkan Jam)</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex bg-slate-900/80 p-1 rounded-xl border border-slate-700 text-sm">
+                <button id="btnTab1" onclick="switchTab('csv-tab')" class="px-4 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition">
+                    📂 Analisis CSV Deposit
+                </button>
+                <button id="btnTab2" onclick="switchTab('nm-tab')" class="px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition">
+                    🎯 Cek Newbie Depo 1st
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+
+        <!-- TAB 1: ANALISIS DEPOSIT CSV -->
+        <section id="csv-tab" class="space-y-6">
+            <!-- Upload Box -->
+            <div class="bg-slate-800/60 border-2 border-dashed border-slate-700 hover:border-amber-500/50 rounded-2xl p-6 text-center transition">
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
+                <label for="csvFileInput" class="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                    <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    </div>
+                    <span class="text-base font-semibold text-slate-200">Unggah File CSV Deposit</span>
+                    <span class="text-xs text-slate-400">Mendukung file CSV seperti DEPO 29.csv (Username, Bank Tujuan, Jumlah, Tanggal Deposit)</span>
+                </label>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                    <span class="text-xs text-slate-400 font-medium">TOTAL NOMINAL DEPO 1ST</span>
+                    <p id="totalNominal" class="text-2xl font-bold text-amber-400 mt-1 font-mono">0</p>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                    <span class="text-xs text-slate-400 font-medium">TOTAL NEWBIE DEPOSIT</span>
+                    <p id="totalTransaksi" class="text-2xl font-bold text-slate-100 mt-1">0</p>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                    <span class="text-xs text-slate-400 font-medium">TOTAL ID NEWBIE DEPOSIT</span>
+                    <p id="totalUser" class="text-2xl font-bold text-sky-400 mt-1">0</p>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                    <span class="text-xs text-slate-400 font-medium">BANK TERFAVORIT (DEPO 1ST)</span>
+                    <p id="topBank" class="text-2xl font-bold text-emerald-400 mt-1">-</p>
+                </div>
+            </div>
+
+            <!-- Filter Controls & Table -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+                <div class="flex flex-col md:flex-row justify-between gap-4">
+                    <div class="flex-1 flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="searchInput" oninput="renderDepositTable()" placeholder="Cari Username / User ID..." class="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500 flex-1">
+                        <select id="bankFilter" onchange="renderDepositTable()" class="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
+                            <option value="">Semua Bank Tujuan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-slate-700">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900 text-slate-400 uppercase text-xs font-semibold">
+                            <tr>
+                                <th class="p-3">No</th>
+                                <th class="p-3">Tanggal / Waktu</th>
+                                <th class="p-3">Username</th>
+                                <th class="p-3">Bank Tujuan</th>
+                                <th class="p-3 text-right">Nominal Depo 1st</th>
+                                <th class="p-3 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depositTableBody" class="divide-y divide-slate-700/50">
+                            <tr>
+                                <td colspan="6" class="p-6 text-center text-slate-500">Silakan unggah file CSV terlebih dahulu.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: CEK NEW MEMBER -->
+        <section id="nm-tab" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Input Box -->
+                <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-4">
+                    <h3 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                        <span>📝 Input Daftar Newbie</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Masukkan daftar Username Newbie (1 username per baris atau dipisah koma/spasi).</p>
+                    <textarea id="nmInput" rows="12" placeholder="Contoh:&#10;Mustika789&#10;Persija12&#10;UserBaru123" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:border-amber-500 font-mono"></textarea>
+                    <button onclick="checkNewMembers()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition">
+                        🔍 Cek Depo 1st Newbie
+                    </button>
+                </div>
+
+                <!-- Hasil Analysis -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Stats NM -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 font-medium">TOTAL INPUT</span>
+                            <p id="nmTotal" class="text-xl font-bold text-slate-200 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 font-medium">SUDAH DEPO 1ST</span>
+                            <p id="nmDepo" class="text-xl font-bold text-emerald-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 font-medium">BELUM DEPO</span>
+                            <p id="nmNoDepo" class="text-xl font-bold text-rose-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 font-medium">TOTAL NOMINAL DEPO 1ST</span>
+                            <p id="nmTotalNominal" class="text-xl font-bold text-amber-400 mt-1 font-mono">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Table Result -->
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="setNMFilter('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950">Semua</button>
+                                <button onclick="setNMFilter('depo')" id="btnFilterDepo" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-slate-200">Sudah Depo</button>
+                                <button onclick="setNMFilter('nodepo')" id="btnFilterNoDepo" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-slate-200">Belum Depo</button>
+                            </div>
+                            <button onclick="exportDepo1stOnly()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5">
+                                📥 Download Newbie Depo 1st Only
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-lg border border-slate-700 max-h-[450px]">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 uppercase text-xs font-semibold sticky top-0">
+                                    <tr>
+                                        <th class="p-3">Username</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3">Waktu Depo 1st</th>
+                                        <th class="p-3">Bank Tujuan</th>
+                                        <th class="p-3 text-right">Nominal Depo 1st</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nmResultTableBody" class="divide-y divide-slate-700/50">
+                                    <tr>
+                                        <td colspan="5" class="p-6 text-center text-slate-500">Masukkan daftar Newbie dan klik tombol Cek.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let rawDepositData = [];
+        let firstDepoMap = {};
+        let nmFilter = 'all';
+        let nmAnalysisResult = [];
+
+        function switchTab(tabId) {
+            document.getElementById('csv-tab').classList.add('hidden');
+            document.getElementById('nm-tab').classList.add('hidden');
+            document.getElementById(tabId).classList.remove('hidden');
+
+            const btn1 = document.getElementById('btnTab1');
+            const btn2 = document.getElementById('btnTab2');
+
+            if(tabId === 'csv-tab') {
+                btn1.className = "px-4 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition";
+                btn2.className = "px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition";
+            } else {
+                btn2.className = "px-4 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition";
+                btn1.className = "px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition";
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processCSVData(results.data);
+                }
+            });
+        }
+
+        function processCSVData(data) {
+            rawDepositData = data;
+            firstDepoMap = {};
+
+            const findKey = (row, possibleKeys) => {
+                const keys = Object.keys(row);
+                return keys.find(k => possibleKeys.some(p => k.toLowerCase().trim() === p.toLowerCase()));
+            };
+
+            if (data.length === 0) return;
+            const sample = data[0];
+            const keyUser = findKey(sample, ['username', 'user_id', 'userid', 'user', 'id']);
+            const keyBank = findKey(sample, ['bank tujuan', 'bank_tujuan', 'bank', 'tujuan']);
+            const keyNominal = findKey(sample, ['jumlah', 'nominal', 'amount', 'total']);
+            const keyTanggal = findKey(sample, ['tanggal deposit', 'tanggal_deposit', 'tanggal approved', 'tanggal', 'waktu', 'date']);
+
+            let parsedList = [];
+
+            data.forEach((row, idx) => {
+                const user = (row[keyUser] || '').toString().trim();
+                const bank = (row[keyBank] || '').toString().trim().toUpperCase();
+                let nominalRaw = (row[keyNominal] || '0').toString().replace(/[^0-9]/g, '');
+                const nominal = parseInt(nominalRaw, 10) || 0;
+                const tanggalStr = row[keyTanggal] || '';
+                const dateObj = new Date(tanggalStr);
+
+                if (user && nominal > 0) {
+                    parsedList.push({
+                        id: idx + 1,
+                        username: user,
+                        bank: bank || 'LAIN-LAIN',
+                        nominal: nominal,
+                        tanggalStr: tanggalStr,
+                        timestamp: isNaN(dateObj.getTime()) ? idx : dateObj.getTime()
+                    });
+                }
+            });
+
+            // Urutkan transaksi berdasarkan waktu/jam (lama ke baru)
+            parsedList.sort((a, b) => a.timestamp - b.timestamp);
+
+            // Filter HANYA simpan deposit PERTAMA untuk setiap user
+            let bankCounts = {};
+            parsedList.forEach(item => {
+                const userKey = item.username.toLowerCase();
+                if (!firstDepoMap[userKey]) {
+                    firstDepoMap[userKey] = item;
+                    bankCounts[item.bank] = (bankCounts[item.bank] || 0) + 1;
+                }
+            });
+
+            // Populate Dropdown Bank Filter
+            const bankSelect = document.getElementById('bankFilter');
+            bankSelect.innerHTML = '<option value="">Semua Bank Tujuan</option>';
+            Object.keys(bankCounts).sort().forEach(b => {
+                bankSelect.innerHTML += `<option value="${b}">${b}</option>`;
+            });
+
+            updateOverviewStats(bankCounts);
+            renderDepositTable();
+            
+            if (document.getElementById('nmInput').value.trim() !== '') {
+                checkNewMembers();
+            }
+        }
+
+        function updateOverviewStats(bankCounts) {
+            const firstDepoList = Object.values(firstDepoMap);
+            const totalNominal = firstDepoList.reduce((acc, curr) => acc + curr.nominal, 0);
+            const totalUser = firstDepoList.length;
+
+            let topBank = '-';
+            let maxCount = 0;
+            for (let b in bankCounts) {
+                if (bankCounts[b] > maxCount) {
+                    maxCount = bankCounts[b];
+                    topBank = b;
+                }
+            }
+
+            document.getElementById('totalNominal').innerText = totalNominal.toLocaleString('id-ID');
+            document.getElementById('totalTransaksi').innerText = totalUser.toLocaleString('id-ID');
+            document.getElementById('totalUser').innerText = totalUser.toLocaleString('id-ID');
+            document.getElementById('topBank').innerText = topBank;
+        }
+
+        function renderDepositTable() {
+            const tbody = document.getElementById('depositTableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const bankFilter = document.getElementById('bankFilter').value;
+
+            const firstDepoList = Object.values(firstDepoMap);
+
+            const filtered = firstDepoList.filter(item => {
+                const matchUser = item.username.toLowerCase().includes(search);
+                const matchBank = !bankFilter || item.bank === bankFilter;
+                return matchUser && matchBank;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Tidak ada data deposit pertama yang cocok.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((item, index) => {
+                html += `
+                    <tr class="hover:bg-slate-700/30 border-b border-slate-700/50">
+                        <td class="p-3 text-slate-400 text-xs">${index + 1}</td>
+                        <td class="p-3 text-xs text-slate-300">${item.tanggalStr || '-'}</td>
+                        <td class="p-3 font-semibold text-slate-100">${item.username}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-800 border border-slate-700 text-slate-300">${item.bank}</span></td>
+                        <td class="p-3 text-right font-mono font-semibold text-emerald-400">${item.nominal}</td>
+                        <td class="p-3 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold border bg-amber-500/20 text-amber-400 border-amber-500/40">
+                                ⭐ DEPO 1st
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function checkNewMembers() {
+            const inputText = document.getElementById('nmInput').value;
+            if (!inputText.trim()) return;
+
+            const nmList = [...new Set(inputText.split(/[\n,\s]+/).map(x => x.trim()).filter(x => x.length > 0))];
+            
+            let totalInput = nmList.length;
+            let sudahDepo = 0;
+            let belumDepo = 0;
+            let totalNominalDepo1st = 0;
+
+            nmAnalysisResult = [];
+
+            nmList.forEach(user => {
+                const firstDepo = firstDepoMap[user.toLowerCase()];
+                const statusDepo = !!firstDepo;
+
+                if (statusDepo) {
+                    sudahDepo++;
+                    totalNominalDepo1st += firstDepo.nominal;
+                } else {
+                    belumDepo++;
+                }
+
+                nmAnalysisResult.push({
+                    username: user,
+                    status: statusDepo,
+                    firstDepo: firstDepo || null
+                });
+            });
+
+            document.getElementById('nmTotal').innerText = totalInput;
+            document.getElementById('nmDepo').innerText = sudahDepo;
+            document.getElementById('nmNoDepo').innerText = belumDepo;
+            document.getElementById('nmTotalNominal').innerText = totalNominalDepo1st.toLocaleString('id-ID');
+
+            renderNMResultTable();
+        }
+
+        function setNMFilter(filter) {
+            nmFilter = filter;
+            ['btnFilterAll', 'btnFilterDepo', 'btnFilterNoDepo'].forEach(id => {
+                document.getElementById(id).className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-slate-200";
+            });
+
+            if(filter === 'all') document.getElementById('btnFilterAll').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950";
+            if(filter === 'depo') document.getElementById('btnFilterDepo').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950";
+            if(filter === 'nodepo') document.getElementById('btnFilterNoDepo').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500 text-slate-950";
+
+            renderNMResultTable();
+        }
+
+        function renderNMResultTable() {
+            const tbody = document.getElementById('nmResultTableBody');
+            
+            const filtered = nmAnalysisResult.filter(item => {
+                if (nmFilter === 'depo') return item.status;
+                if (nmFilter === 'nodepo') return !item.status;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Tidak ada data Newbie yang sesuai filter.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(item => {
+                if (item.status && item.firstDepo) {
+                    html += `
+                        <tr class="hover:bg-slate-700/30 border-b border-slate-700/50">
+                            <td class="p-3 font-semibold text-slate-100">${item.username}</td>
+                            <td class="p-3">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Sudah Depo</span>
+                            </td>
+                            <td class="p-3 text-xs text-slate-300">${item.firstDepo.tanggalStr || '-'}</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-800 border border-slate-700 text-slate-300">${item.firstDepo.bank}</span></td>
+                            <td class="p-3 text-right font-mono font-bold text-amber-400">${item.firstDepo.nominal}</td>
+                        </tr>
+                    `;
+                } else {
+                    html += `
+                        <tr class="hover:bg-slate-700/30 border-b border-slate-700/50">
+                            <td class="p-3 font-semibold text-slate-100">${item.username}</td>
+                            <td class="p-3">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">Belum Depo</span>
+                            </td>
+                            <td class="p-3 text-xs text-slate-500">-</td>
+                            <td class="p-3 text-xs text-slate-500">-</td>
+                            <td class="p-3 text-right font-mono text-slate-500">0</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // HANYA MENGUNDUH DATA NEWBIE YANG SUDAH DEPO 1ST
+        function exportDepo1stOnly() {
+            const depoOnlyList = nmAnalysisResult.filter(item => item.status && item.firstDepo);
+
+            if (depoOnlyList.length === 0) {
+                return alert('Tidak ada Newbie yang melakukan deposit pertama untuk di-download.');
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Username,Waktu Depo 1st,Bank Tujuan,Nominal Depo 1st,Status\n";
+            
+            depoOnlyList.forEach(item => {
+                const d = item.firstDepo;
+                csvContent += `"${item.username}","${d.tanggalStr || '-'}","${d.bank}",${d.nominal},"Sudah Depo 1st"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Newbie_Depo_1st_Only.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
