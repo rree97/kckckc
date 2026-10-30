@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Deposit Pertama Newbie</title>
+    <title>KCSNKCSN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
@@ -38,18 +38,21 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-100">Cek Newbie Depo 1st</h1>
-                    <p class="text-xs text-slate-400">Analisis Transaksi & Deposit Pertama New Member (Berdasarkan Jam)</p>
+                    <h1 class="text-xl font-bold text-slate-100">Cek Depo & Hitung Bonus</h1>
+                    <p class="text-xs text-slate-400">Analisis Transaksi, Depo 1st, & Kalkulator Bonus Member</p>
                 </div>
             </div>
             
             <!-- Navigation Tabs -->
-            <div class="flex bg-slate-900/80 p-1 rounded-xl border border-slate-700 text-sm">
-                <button id="btnTab1" onclick="switchTab('csv-tab')" class="px-4 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition">
+            <div class="flex flex-wrap bg-slate-900/80 p-1 rounded-xl border border-slate-700 text-sm gap-1">
+                <button id="btnTab1" onclick="switchTab('csv-tab')" class="px-3.5 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition">
                     📂 Analisis CSV Deposit
                 </button>
-                <button id="btnTab2" onclick="switchTab('nm-tab')" class="px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition">
+                <button id="btnTab2" onclick="switchTab('nm-tab')" class="px-3.5 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition">
                     🎯 Cek Newbie Depo 1st
+                </button>
+                <button id="btnTab3" onclick="switchTab('bonus-tab')" class="px-3.5 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition">
+                    🎁 Hitung Bonus
                 </button>
             </div>
         </div>
@@ -67,7 +70,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                     </div>
                     <span class="text-base font-semibold text-slate-200">Unggah File CSV Deposit</span>
-                    <span class="text-xs text-slate-400">Mendukung file CSV seperti DEPO 29.csv (Username, Bank Tujuan, Jumlah, Tanggal Deposit)</span>
+                    <span class="text-xs text-slate-400">Mendukung file CSV deposit (Username, Bank Tujuan, Jumlah, Tanggal Deposit)</span>
                 </label>
             </div>
 
@@ -197,6 +200,77 @@
             </div>
         </section>
 
+        <!-- TAB 3: HITUNG BONUS -->
+        <section id="bonus-tab" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Form Input Bonus -->
+                <div class="lg:col-span-5 bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-4">
+                    <h3 class="text-base font-bold text-slate-200 flex items-center gap-2 border-b border-slate-700 pb-3">
+                        <span>🎁 Kalkulator Bonus Member</span>
+                    </h3>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Pilih Jenis Bonus</label>
+                            <select id="bonusType" onchange="toggleBonusInput()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-amber-500">
+                                <option value="Cashback Kekalahan">Cashback Kekalahan (5% - 15%)</option>
+                                <option value="Rollingan Turnover">Rollingan Turnover (0.5%)</option>
+                            </select>
+                        </div>
+
+                        <!-- Input Nominal (Kekalahan / TO) -->
+                        <div>
+                            <label id="lblNominalInput" class="block text-xs font-medium text-slate-400 mb-1">Total Kekalahan (Rp)</label>
+                            <input type="text" id="bonusInputValue" oninput="formatAndCalculateBonus(this)" placeholder="Contoh: 500000" class="w-full bg-slate-900 border border-slate-700 text-amber-400 font-mono font-bold text-lg rounded-lg p-2.5 focus:outline-none focus:border-amber-500">
+                            <p id="lblInputHelp" class="text-[11px] text-slate-500 mt-1">Masukkan nominal angka murni tanpa titik/koma.</p>
+                        </div>
+
+                        <!-- Info Syarat Bonus -->
+                        <div class="bg-slate-900/80 border border-slate-700/70 p-3.5 rounded-lg space-y-1 text-xs text-slate-300">
+                            <span class="font-bold text-amber-400 block mb-1">Syarat & Ketentuan Bonus:</span>
+                            <div id="bonusRulesInfo">
+                                <!-- Dynamic Rules Text -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Message Output -->
+                <div class="lg:col-span-7 bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                            <h3 class="text-base font-bold text-slate-200">💬 Pesan Siap Salin (Balasan Member)</h3>
+                            <span id="badgeBonusStatus" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-700 text-slate-400">
+                                Menunggu Input
+                            </span>
+                        </div>
+
+                        <!-- Calculated Results Summary -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                                <span class="text-[11px] text-slate-400 font-medium block">PERSENTASE BONUS</span>
+                                <p id="resBonusRate" class="text-lg font-bold text-sky-400 mt-0.5">0%</p>
+                            </div>
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                                <span class="text-[11px] text-slate-400 font-medium block">TOTAL NOMINAL BONUS</span>
+                                <p id="resBonusAmount" class="text-lg font-bold text-amber-400 font-mono mt-0.5">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Generated Message Box -->
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Hasil Pesan Balasan CS:</label>
+                            <textarea id="generatedMessageText" rows="6" readonly class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-3 text-sm font-sans focus:outline-none focus:border-amber-500 leading-relaxed resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <button onclick="copyGeneratedMessage()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                        <span>📋 Salin Pesan</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script>
@@ -208,20 +282,26 @@
         function switchTab(tabId) {
             document.getElementById('csv-tab').classList.add('hidden');
             document.getElementById('nm-tab').classList.add('hidden');
+            document.getElementById('bonus-tab').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
 
             const btn1 = document.getElementById('btnTab1');
             const btn2 = document.getElementById('btnTab2');
+            const btn3 = document.getElementById('btnTab3');
 
-            if(tabId === 'csv-tab') {
-                btn1.className = "px-4 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition";
-                btn2.className = "px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition";
-            } else {
-                btn2.className = "px-4 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition";
-                btn1.className = "px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition";
+            const activeClass = "px-3.5 py-2 rounded-lg font-medium text-amber-400 bg-slate-800 shadow transition";
+            const inactiveClass = "px-3.5 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 transition";
+
+            btn1.className = tabId === 'csv-tab' ? activeClass : inactiveClass;
+            btn2.className = tabId === 'nm-tab' ? activeClass : inactiveClass;
+            btn3.className = tabId === 'bonus-tab' ? activeClass : inactiveClass;
+
+            if(tabId === 'bonus-tab') {
+                toggleBonusInput();
             }
         }
 
+        // CSV ANALYSIS FUNCTIONALITIES
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -273,10 +353,8 @@
                 }
             });
 
-            // Urutkan transaksi berdasarkan waktu/jam (lama ke baru)
             parsedList.sort((a, b) => a.timestamp - b.timestamp);
 
-            // Filter HANYA simpan deposit PERTAMA untuk setiap user
             let bankCounts = {};
             parsedList.forEach(item => {
                 const userKey = item.username.toLowerCase();
@@ -286,7 +364,6 @@
                 }
             });
 
-            // Populate Dropdown Bank Filter
             const bankSelect = document.getElementById('bankFilter');
             bankSelect.innerHTML = '<option value="">Semua Bank Tujuan</option>';
             Object.keys(bankCounts).sort().forEach(b => {
@@ -458,7 +535,6 @@
             tbody.innerHTML = html;
         }
 
-        // HANYA MENGUNDUH DATA NEWBIE YANG SUDAH DEPO 1ST
         function exportDepo1stOnly() {
             const depoOnlyList = nmAnalysisResult.filter(item => item.status && item.firstDepo);
 
@@ -480,6 +556,116 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        // ==========================================
+        // FITUR BARU: HITUNG BONUS & GENERATE MESSAGE
+        // ==========================================
+
+        function toggleBonusInput() {
+            const bonusType = document.getElementById('bonusType').value;
+            const lblNominal = document.getElementById('lblNominalInput');
+            const rulesInfo = document.getElementById('bonusRulesInfo');
+
+            if (bonusType === 'Cashback Kekalahan') {
+                lblNominal.innerText = 'Total Kekalahan (Rp)';
+                rulesInfo.innerHTML = `
+                    • <b>5%</b> : Total Kekalahan 250.000 - 50.000.000<br>
+                    • <b>7.5%</b> : Total Kekalahan > 50.000.000 - 100.000.000<br>
+                    • <b>10%</b> : Total Kekalahan > 100.000.000 - 250.000.000<br>
+                    • <b>15%</b> : Total Kekalahan > 250.000.000
+                `;
+            } else {
+                lblNominal.innerText = 'Total Turnover / TO (Rp)';
+                rulesInfo.innerHTML = `
+                    • <b>0.5% Tanpa Batas</b> : Minimal Turnover 100.000
+                `;
+            }
+
+            calculateBonus();
+        }
+
+        function formatAndCalculateBonus(input) {
+            let val = input.value.replace(/[^0-9]/g, '');
+            input.value = val;
+            calculateBonus();
+        }
+
+        function calculateBonus() {
+            const bonusType = document.getElementById('bonusType').value;
+            const rawVal = document.getElementById('bonusInputValue').value;
+            const inputVal = parseInt(rawVal, 10) || 0;
+
+            let isEligible = false;
+            let bonusRate = 0;
+            let bonusAmount = 0;
+
+            if (bonusType === 'Cashback Kekalahan') {
+                if (inputVal >= 250000 && inputVal <= 50000000) {
+                    isEligible = true;
+                    bonusRate = 0.05;
+                } else if (inputVal > 50000000 && inputVal <= 100000000) {
+                    isEligible = true;
+                    bonusRate = 0.075;
+                } else if (inputVal > 100000000 && inputVal <= 250000000) {
+                    isEligible = true;
+                    bonusRate = 0.10;
+                } else if (inputVal > 250000000) {
+                    isEligible = true;
+                    bonusRate = 0.15;
+                }
+            } else if (bonusType === 'Rollingan Turnover') {
+                if (inputVal >= 100000) {
+                    isEligible = true;
+                    bonusRate = 0.005; // 0.5%
+                }
+            }
+
+            if (isEligible) {
+                bonusAmount = Math.floor(inputVal * bonusRate);
+            }
+
+            // Update UI Stats
+            document.getElementById('resBonusRate').innerText = (bonusRate * 100) + '%';
+            document.getElementById('resBonusAmount').innerText = bonusAmount.toLocaleString('id-ID');
+
+            const badgeStatus = document.getElementById('badgeBonusStatus');
+            const msgBox = document.getElementById('generatedMessageText');
+
+            if (inputVal === 0) {
+                badgeStatus.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-slate-700 text-slate-400";
+                badgeStatus.innerText = "Menunggu Input";
+                msgBox.value = "Silakan masukkan nominal kekalahan / turnover member di sebelah kiri.";
+                return;
+            }
+
+            if (isEligible) {
+                badgeStatus.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                badgeStatus.innerText = "✅ Capai Syarat Bonus";
+
+                const formattedBonus = bonusAmount.toLocaleString('id-ID');
+                msgBox.value = `Total Bonus ${bonusType} bosku sekitar ${formattedBonus} ya bosku, mohon dinantikan hingga pembagian bonusnya selesai ya bosku^^`;
+            } else {
+                badgeStatus.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                badgeStatus.innerText = "❌ Belum Capai Syarat";
+
+                msgBox.value = `Mohon maaf bosku, kami cek disini untuk minggu ini bosku belum mencapai syarat untuk mendapatkan bonus ${bonusType} ya bosku, untuk itu bosku bisa tingkatkan kembali bermainnya ya bosku, semakin banyak bosku bermain, semakin banyak juga bonus yang bisa bosku dapatkan ya^^`;
+            }
+        }
+
+        function copyGeneratedMessage() {
+            const msgBox = document.getElementById('generatedMessageText');
+            if (!msgBox.value || msgBox.value.startsWith("Silakan masukkan")) {
+                return alert("Belum ada pesan bonus yang dibuat.");
+            }
+
+            navigator.clipboard.writeText(msgBox.value).then(() => {
+                alert("Pesan berhasil disalin ke clipboard!");
+            }).catch(() => {
+                msgBox.select();
+                document.execCommand('copy');
+                alert("Pesan berhasil disalin!");
+            });
         }
     </script>
 </body>
